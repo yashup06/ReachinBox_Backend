@@ -1,130 +1,115 @@
-# ReachInBox Assignment
+# ReachInBox Backend Assignment
 
-## Server
 The assignment is to build a tool that will parse and check the emails in a Google and Outlook email ID, and
-respond to the e-mails based on the context using AI. Use BullMQ as the tasks scheduler
-This is a server-based application built with Node.js and Express. It uses various packages such as  `openai` for AI functionalities, `googleapis` for Google APIs, and `axios` for HTTP requests and `bullMQ` to process queues.
-![image](https://github.com/shraddha-gawde/reachInbox-assignment/assets/101090200/0237adc4-c817-4d79-9b09-fc0b27f34e6e)
+respond to the e-mails based on the context using AI. Use BullMQ as the tasks scheduler.
 
+# To get the google_client_id,secret,uri,token
 
-## deployed links :
-frontend : [Link](https://reach-inbox-assignment.vercel.app/)
-<br>
-Backend : [Link](https://reachinbox-assignment-4rf9.onrender.com)
-<br>
-API documentation build with postman documentation - [Link](https://documenter.getpostman.com/view/31971527/2sA35D43FE)
+Step 1: Set Up a Google Cloud Project
+Go to the Google Cloud Console:
 
+Navigate to Google Cloud Console.
+Create a New Project:
 
+Click on the project dropdown at the top of the page.
+Click on "New Project."
+Enter a name for your project and select an organization and billing account if prompted.
+Click "Create."
+Step 2: Enable the Necessary APIs
+Enable APIs:
+In the Cloud Console, go to the "APIs & Services" > "Library."
+Search for the API you need (e.g., Google Calendar API, Google Drive API).
+Click on the API, then click "Enable."
+Step 3: Configure OAuth Consent Screen
+OAuth Consent Screen:
+Go to "APIs & Services" > "OAuth consent screen."
+Choose "External" or "Internal" based on your application's audience.
+Fill in the required fields (app name, user support email, etc.).
+Add any necessary scopes your app requires.
+Save and continue.
+Step 4: Create OAuth Credentials
+Create OAuth 2.0 Client ID:
 
-# technologies used:
-- Node.js
-- Express.js
-- OpenAI
-- Google APIs
-- Microsoft Graph API
-# npm packages used
-- dotenv
-- Axios
-- bullMQ
-- google-auth-library
-- ioredis
-- @microsoft/microsoft-graph-client
-- @azure/msal-node
+Go to "APIs & Services" > "Credentials."
+Click on "Create Credentials" > "OAuth 2.0 Client ID."
+Select the application type (e.g., Web application).
+Enter a name for your OAuth client.
+Set the "Authorized redirect URIs" (e.g., http://localhost:8000/oauth2callback for testing locally).
+Click "Create."
+Obtain Client ID and Secret:
 
-<br>
+After creation, you will see a pop-up with your Client ID and Client Secret.
+Save these credentials securely.
+Step 5: Configure Your Application
+Set Up Redirect URI:
+Ensure that the redirect_uri in your application matches the one configured in the Google Cloud Console.
+Update your application settings with the GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI.
+Step 6: Get the Refresh Token
+Obtain Authorization Code:
 
-## Installation setup
-1. Clone the repository to your local machine
-```bash
-git clone https://github.com/shraddha-gawde/reachInbox-assignment.git
-```
-2. Navigate to the root directory of the project directory :
-```bash 
-cd server
-```
-3. Run `npm install` to install all the dependencies
-4. Create a `.env` file in the root directory with the same IDs as specified in the documentation.
+Direct users to the Google authorization URL, including the client ID, redirect URI, and scopes.
+Example URL:
+bash
+https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=SCOPE
+Exchange Authorization Code for Access and Refresh Tokens:
 
-## Running the server
-1. To start the server, run the following command in your terminal
-```bash
-npm start
-```
-*This will start the server at localhost:5000 (or whatever port you have specified).*
-or we can use backend deployed link also.
+After the user authorizes the application, they will be redirected to the redirect URI with a code parameter.
+Use this code to request access and refresh tokens from Google's token endpoint:
+bash
 
-2. To start the worker.js file, run the following command in your terminal
-```bash
-npm run server
-```
+POST https://oauth2.googleapis.com/token
+Include the following parameters:
+makefile
 
-## API Endpoints
+code=AUTHORIZATION_CODE
+client_id=YOUR_CLIENT_ID
+client_secret=YOUR_CLIENT_SECRET
+redirect_uri=YOUR_REDIRECT_URI
+grant_type=authorization_code
+Receive and Save Tokens:
 
-### For Google's OAuth2.0:
-- `https://reachinbox-assignment-4rf9.onrender.com/auth/google` - GET for google authentication
-- `https://reachinbox-assignment-4rf9.onrender.com/api/mail/userInfo/:email` - GET request to view user profile
-- `https://reachinbox-assignment-4rf9.onrender.com/api/mail/allDrafts/:email` - GET request to view all drafts mail.
-- `https://reachinbox-assignment-4rf9.onrender.com/api/mail/read/:email/message/:message` - GET request to read a specific email(using id).
-- `https://reachinbox-assignment-4rf9.onrender.com/api/mail/list/:email` - GET request to get a list of mails.
-- `https://reachinbox-assignment-4rf9.onrender.com/api/mail/sendMail` - POST request send mail with label.
-```
-{
-    "from":"sendersmail@gmail.com",
-    "to":"recieversmail@gmail.com",
-    "label":"interested/not-interested/more-information"
-}
-```
-- `https://reachinbox-assignment-4rf9.onrender.com/api/mail/sendone/:id` - POST request to send a single mail for particular ID.
-```
-{
-    "from":"sendersmail@gmail.com",
-    "to":"recieversmail@gmail.com"
-}
-```
-- - `https://reachinbox-assignment-4rf9.onrender.com/api/mail/sendMultiple/:id` - POST request to send a single mail for particular ID.
- ```
-{
-    "from":"sendersmail@gmail.com",
-    "to":["demo@gmail.com","demo@gmail.com", "demo@gmail.com"]
-}
-```
-![image](https://github.com/shraddha-gawde/reachInbox-assignment/assets/101090200/e0bbbdce-1ec4-46c4-8335-e049f7f5b5c7)
+Google will respond with a JSON object containing the access_token and refresh_token.
+Save the refresh_token securely for future use.
 
-### For microsoft azur's OAuth2.0:
+# to obation open_api_key
 
-- `https://reachinbox-assignment-4rf9.onrender.com/outlook/signin` - GET for micosoft azur authentication for outlook
-- `https://reachinbox-assignment-4rf9.onrender.com/outlook/callbak` - GET for micosoft azur getting access token
-- `https://reachinbox-assignment-4rf9.onrender.com/outlook/profile` - GET request to get profile data for particular user
-- `https://reachinbox-assignment-4rf9.onrender.com/outlook/all-Mails/{email}` - GET request for get ist of all mails of outllok user
-- `https://reachinbox-assignment-4rf9.onrender.com/outlook/{email}/read-Msg/{:message}` = GET request to read partivcular mail using messange id
-- `https://reachinbox-assignment-4rf9.onrender.com/outlook/{email}/send-Mail` - post request for sending mail to another user using outlook
-```
-{
-    "from":"sendersmail@gmail.com",
-    "to":"recieversmail@gmail.com"
-     "label":"interested/not-interested/more-information"
-}
-```
-- `https://reachinbox-assignment-4rf9.onrender.com/outlook/sendone/:email/:id` - post request for sending mail to another user using outlook using `bullmq`
-```
-{
-    "from":"sendersmail@gmail.com",
-    "to":"recieversmail@gmail.com"
-}
-```
+Step 1: Create an OpenAI Account
+Sign Up or Log In:
+Go to OpenAI's website.
+Sign up for an account if you don’t have one, or log in if you already have an account.
+Step 2: Access the API
+Navigate to the API Section:
+Once logged in, go to the API section of your account. This can typically be found in the dashboard or under a specific section related to API usage.
+Step 3: Generate an API Key
+Create a New API Key:
 
-## Sample .env sample:
-```
-PORT = ***
-GOOGLE_CLIENT_ID = ***
-GOOGLE_CLIENT_SECRET = ***
-GOOGLE_REDIRECT_URI = ***
-GOOGLE_REFRESH_TOKEN = ***
-OPENAI_SECRECT_KEY = ***
-redis_port = ***
-redis_host = ***
-redis_pass = ***
-AZURE_CLIENT_ID = ***
-AZURE_CLIENT_SECRET = *** 
-AZURE_TENANT_ID = ***
-```
+In the API section, look for an option to create a new API key.
+Click on the button or link to generate a new key.
+You may be prompted to give the key a name or description for your reference.
+Save Your API Key:
+
+Once the key is generated, it will be displayed on the screen.
+Copy the key and store it securely. This key is your secret key and should not be shared publicly.
+Step 4: Secure Your API Key
+Store Securely:
+Keep the API key in a secure place, such as an environment variable or a secrets management service.
+Avoid hardcoding the API key directly into your application's source code.
+
+# technologies used 
+
+Node.js
+Express.js
+OpenAI
+Google APIs
+Microsoft Graph API
+
+# To run this application
+
+-Clone the repo first
+
+-By clicking right on backend you will get open with integrated terminal
+
+-After getting into the intergrated terminal run "npm install" 
+
+-Then Run the server by writing the command "npm start"
+
